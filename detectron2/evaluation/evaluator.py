@@ -100,7 +100,13 @@ def inference_on_dataset(model, data_loader, evaluator):
     Returns:
         The return value of `evaluator.evaluate()`
     """
-    num_devices = torch.distributed.get_world_size() if torch.distributed.is_initialized() else 1
+    def _get_world_size():
+        if not torch.distributed.is_available():
+            return 1
+        if not torch.distributed.is_initialized():
+            return 1
+        return torch.distributed.get_world_size()
+    num_devices = _get_world_size()
     logger = logging.getLogger(__name__)
     logger.info("Start inference on {} images".format(len(data_loader)))
 
